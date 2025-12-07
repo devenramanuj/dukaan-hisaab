@@ -1,0 +1,15 @@
+<h1>રિપોર્ટ્સ</h1>
+
+<p>Total Customers: <span id="totalCustomers">0</span></p>
+<p>Total Items: <span id="totalItems">0</span></p>
+<p>Total Invoices: <span id="totalInvoices">0</span></p>
+
+<script>
+function loadReports() {
+    document.getElementById('totalCustomers').textContent = getCustomers().length;
+    document.getElementById('totalItems').textContent = getItems().length;
+    document.getElementById('totalInvoices').textContent = JSON.parse(localStorage.getItem('invoices') || '[]').length;
+}
+
+window.onload = loadReports;
+</script>

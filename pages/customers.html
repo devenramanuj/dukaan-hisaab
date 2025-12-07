@@ -1,0 +1,59 @@
+<h1>ગ્રાહકો</h1>
+
+<div class="customer-form">
+    <input type="text" id="custName" placeholder="નામ">
+    <input type="text" id="custPhone" placeholder="ફોન">
+    <input type="text" id="custAddress" placeholder="સરનામું">
+    <button onclick="addNewCustomer()">ઉમેરો</button>
+</div>
+
+<table id="customerTable">
+    <thead>
+        <tr>
+            <th>નામ</th>
+            <th>ફોન</th>
+            <th>સરનામું</th>
+            <th>બેલેન્સ</th>
+            <th>ક્રિયા</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+function loadCustomers() {
+    const tbody = document.querySelector('#customerTable tbody');
+    tbody.innerHTML = '';
+    const customers = getCustomers();
+    customers.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${c.name}</td>
+            <td>${c.phone}</td>
+            <td>${c.address}</td>
+            <td>₹ ${c.balance}</td>
+            <td><button onclick="removeCustomer(${c.id})">ડિલીટ</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function addNewCustomer() {
+    const name = document.getElementById('custName').value;
+    const phone = document.getElementById('custPhone').value;
+    const address = document.getElementById('custAddress').value;
+    if(!name) { alert('નામ દાખલ કરો'); return; }
+    addCustomer(name, phone, address);
+    document.getElementById('custName').value = '';
+    document.getElementById('custPhone').value = '';
+    document.getElementById('custAddress').value = '';
+    loadCustomers();
+}
+
+function removeCustomer(id) {
+    deleteCustomer(id);
+    loadCustomers();
+}
+
+window.onload = loadCustomers;
+</script>

@@ -1,0 +1,68 @@
+<h1>આઇટમ્સ</h1>
+
+<div class="item-form">
+    <input type="text" id="itemName" placeholder="આઇટમ નામ">
+    <input type="number" id="itemStock" placeholder="જથ્થો" value="0">
+    <input type="number" id="itemPrice" placeholder="કિંમત" value="0">
+    <button onclick="addNewItem()">ઉમેરો</button>
+</div>
+
+<table id="itemsTable">
+    <thead>
+        <tr>
+            <th>નામ</th>
+            <th>જથ્થો</th>
+            <th>કિંમત</th>
+            <th>ક્રિયા</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+function getItems() {
+    return JSON.parse(localStorage.getItem('items') || '[]');
+}
+
+function saveItems(items) {
+    localStorage.setItem('items', JSON.stringify(items));
+}
+
+function loadItems() {
+    const tbody = document.querySelector('#itemsTable tbody');
+    tbody.innerHTML = '';
+    getItems().forEach((it, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${it.name}</td>
+            <td>${it.stock}</td>
+            <td>₹ ${it.price}</td>
+            <td><button onclick="deleteItem(${i})">ડિલીટ</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function addNewItem() {
+    const name = document.getElementById('itemName').value;
+    const stock = Number(document.getElementById('itemStock').value);
+    const price = Number(document.getElementById('itemPrice').value);
+    if(!name){ alert('નામ દાખલ કરો'); return; }
+    const items = getItems();
+    items.push({name, stock, price});
+    saveItems(items);
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemStock').value = 0;
+    document.getElementById('itemPrice').value = 0;
+    loadItems();
+}
+
+function deleteItem(index) {
+    const items = getItems();
+    items.splice(index,1);
+    saveItems(items);
+    loadItems();
+}
+
+window.onload = loadItems;
+</script>

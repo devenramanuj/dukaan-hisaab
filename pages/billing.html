@@ -1,0 +1,137 @@
+<h1>બિલિંગ</h1>
+
+<div class="billing-form">
+    <select id="billCustomer">
+        <option value="">ગ્રાહક પસંદ કરો</option>
+    </select>
+    <input type="text" id="billItem" placeholder="આઇટમ નામ">
+    <input type="number" id="billQty" placeholder="જથ્થો" value="1">
+    <input type="number" id="billPrice" placeholder="કિંમત" value="0">
+    <button onclick="addInvoiceItem()">એડ</button>
+</div>
+
+<table id="billTable">
+    <thead>
+        <tr>
+            <th>આઇટમ</th>
+            <th>જથ્થો</th>
+            <th>કિંમત</th>
+            <th>ટોટલ</th>
+            <th>કટીંગ</th>
+        </tr>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    </thead>
+    <tbody></tbody>
+</table>
+
+<p>Total: ₹ <span id="billTotal">0</span></p>
+<button onclick="saveBill()">Save Invoice</button>
+
+<script>
+let billItems = [];
+
+function loadCustomersForBilling() {
+    const select = document.getElementById('billCustomer');
+    select.innerHTML = '<option value="">ગ્રાહક પસંદ કરો</option>';
+    getCustomers().forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+    });
+}
+
+function addInvoiceItem() {
+    const name = document.getElementById('billItem').value;
+    const qty = Number(document.getElementById('billQty').value);
+    const price = Number(document.getElementById('billPrice').value);
+    if(!name || qty<=0 || price<=0) { alert('માહિતી તપાસો'); return; }
+    const total = qty*price;
+    billItems.push({name, qty, price, total});
+    renderBillItems();
+}
+
+function renderBillItems() {
+    const tbody = document.querySelector('#billTable tbody');
+    tbody.innerHTML = '';
+    let total = 0;
+    billItems.forEach((item, i) => {
+        total += item.total;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.qty}</td>
+            <td>${item.price}</td>
+            <td>${item.total}</td>
+            <td><button onclick="removeInvoiceItem(${i})">ડિલીટ</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('billTotal').textContent = total;
+}
+
+function removeInvoiceItem(index) {
+    billItems.splice(index,1);
+    renderBillItems();
+}
+
+function saveBill() {
+    const customerId = Number(document.getElementById('billCustomer').value || 0);
+    const total = billItems.reduce((s,i)=>s+i.total,0);
+    if(billItems.length===0){ alert('કોઈ આઇટમ નથી'); return; }
+
+    // GST Calculation (e.g., 18%)
+    const gst = +(total*0.18).toFixed(2);
+    const grandTotal = total + gst;
+
+    const invoice = {
+        customerId,
+        items: billItems,
+        total,
+        gst,
+        grandTotal,
+        date: new Date().toISOString(),
+        invoiceNumber: 'INV-'+Date.now()
+    };
+
+    saveInvoice(invoice);  // Save in localStorage
+    billItems = [];
+    renderBillItems();
+    alert('Invoice Saved!');
+
+    generatePDF(invoice);  // Generate PDF
+}
+function generatePDF(invoice) {
+    const customer = getCustomers().find(c=>c.id===invoice.customerId) || {};
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text('દુકાન હિસાબ - INVOICE', 14, 20);
+
+    doc.setFontSize(10);
+    doc.text('Invoice No: ' + invoice.invoiceNumber, 14, 30);
+    doc.text('Date: ' + new Date(invoice.date).toLocaleDateString(), 14, 36);
+    doc.text('Customer: ' + (customer.name || ''), 14, 42);
+
+    const rows = invoice.items.map((it, i)=>[
+        i+1, it.name, it.qty, it.price, it.total
+    ]);
+
+    autoTable(doc, {
+        head: [['#','Item','Qty','Rate','Amount']],
+        body: rows,
+        startY: 50,
+        theme: 'grid'
+    });
+
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.text('GST (18%): ₹ ' + invoice.gst, 14, finalY);
+    doc.text('Grand Total: ₹ ' + invoice.grandTotal, 14, finalY + 8);
+
+    doc.save(invoice.invoiceNumber + '.pdf');
+}
+
+window.onload = loadCustomersForBilling;
+</script>

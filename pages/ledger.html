@@ -1,0 +1,35 @@
+<h1>લેજર</h1>
+
+<table id="ledgerTable">
+    <thead>
+        <tr>
+            <th>તારીખ</th>
+            <th>એકાઉન્ટ</th>
+            <th>ડેબિટ</th>
+            <th>ક્રેડિટ</th>
+            <th>નોટ</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+function loadLedger() {
+    const tbody = document.querySelector('#ledgerTable tbody');
+    tbody.innerHTML = '';
+    const ledger = getLedger();
+    ledger.forEach(entry => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${new Date(entry.date).toLocaleString()}</td>
+            <td>${entry.account}</td>
+            <td>₹ ${entry.debit || 0}</td>
+            <td>₹ ${entry.credit || 0}</td>
+            <td>${entry.narration || ''}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+window.onload = loadLedger;
+</script>
