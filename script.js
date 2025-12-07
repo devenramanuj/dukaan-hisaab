@@ -1,57 +1,43 @@
-// ===== Sidebar Navigation =====
-const sidebarLinks = document.querySelectorAll('.sidebar ul li a');
-const iframe = document.getElementById('frame');
+// Minimal stock & ledger
+let stock = {}; // itemName: {qty, purchaseRate, sellRate}
+let ledger = []; // array of transactions
 
-sidebarLinks.forEach(link => {
-    link.addEventListener('click', function(e){
-        e.preventDefault();
-        iframe.src = this.getAttribute('href');
-    });
-});
-
-// ===== Customers Page =====
-function addCustomer(name, phone, address) {
-    let customers = JSON.parse(localStorage.getItem('customers') || '[]');
-    const id = Date.now();
-    customers.push({id, name, phone, address, balance: 0});
-    localStorage.setItem('customers', JSON.stringify(customers));
-    return id;
-}
-
-function getCustomers() {
-    return JSON.parse(localStorage.getItem('customers') || '[]');
-}
-
-function deleteCustomer(id) {
-    let customers = getCustomers();
-    customers = customers.filter(c => c.id !== id);
-    localStorage.setItem('customers', JSON.stringify(customers));
-}
-
-// ===== Billing Page =====
-function saveInvoice(invoice) {
-    let invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-    invoices.push(invoice);
-    localStorage.setItem('invoices', JSON.stringify(invoices));
-
-    // Update customer balance
-    if(invoice.customerId) {
-        let customers = getCustomers();
-        let customer = customers.find(c => c.id === invoice.customerId);
-        if(customer){
-            customer.balance += invoice.total;
-            localStorage.setItem('customers', JSON.stringify(customers));
-        }
+// Purchase function
+function purchaseItem(item, qty, rate){
+    if(stock[item]){
+        stock[item].qty += qty;
+        stock[item].purchaseRate = rate;
+    } else {
+        stock[item] = {qty: qty, purchaseRate: rate, sellRate: rate*1.2};
     }
+    ledger.push({type:'purchase', item, qty, rate, date: new Date()});
+    alert(`${item} ખરીદી ${qty} units at ₹${rate} each`);
+    updateStockTable();
 }
 
-// ===== Ledger Page =====
-function addLedgerEntry(entry) {
-    let ledger = JSON.parse(localStorage.getItem('ledger') || '[]');
-    ledger.push(entry);
-    localStorage.setItem('ledger', JSON.stringify(ledger));
+// Sale function
+function sellItem(item, qty){
+    if(!stock[item] || stock[item].qty < qty){
+        alert(`Stock not enough for ${item}`);
+        return;
+    }
+    stock[item].qty -= qty;
+    ledger.push({type:'sale', item, qty, rate: stock[item].sellRate, date:new Date()});
+    alert(`${item} વેચાણ ${qty} units at ₹${stock[item].sellRate} each`);
+    updateStockTable();
 }
 
-function getLedger() {
-    return JSON.parse(localStorage.getItem('ledger') || '[]');
+// Update stock table
+function updateStockTable(){
+    let tbody = document.getElementById('stockBody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    for(let item in stock){
+        tbody.innerHTML += `<tr>
+            <td>${item}</td>
+            <td>${stock[item].qty}</td>
+            <td>${stock[item].purchaseRate}</td>
+            <td>${stock[item].sellRate}</td>
+        </tr>`;
+    }
 }
