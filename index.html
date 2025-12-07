@@ -1,1 +1,30 @@
-"<!DOCTYPE html><html><head><title>Dukaan Hisaab</title></head><body><h1>Shop Accounting App (Gujarati)</h1></body></html>" 
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>દુકાન હિસાબ - Shop Accounting App</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2 class="logo">દુકાન હિસાબ</h2>
+        <ul>
+            <li onclick="loadPage('dashboard')">ડેશબોર્ડ</li>
+            <li onclick="loadPage('billing')">બિલિંગ</li>
+            <li onclick="loadPage('ledger')">લેજર</li>
+            <li onclick="loadPage('customers')">ગ્રાહકો</li>
+            <li onclick="loadPage('items')">વસ્તુઓ / સ્ટોક</li>
+            <li onclick="loadPage('reports')">રિપોર્ટ્સ</li>
+        </ul>
+    </aside>
+
+    <main class="content">
+        <iframe id="frame" src="pages/dashboard.html"></iframe>
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
